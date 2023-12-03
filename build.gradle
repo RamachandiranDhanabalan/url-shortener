@@ -16,11 +16,22 @@ repositories {
 }
 
 dependencies {
+	annotationProcessor 'org.projectlombok:lombok:1.18.28'
+	compileOnly 'org.projectlombok:lombok:1.18.28'
+
+	implementation ('org.apache.commons:commons-pool2')
 	implementation ('org.springframework.boot:spring-boot-starter')
 	implementation ('org.springframework.boot:spring-boot-starter-web')
+	implementation ('org.springframework.boot:spring-boot-starter-data-redis')
+	implementation ('io.lettuce:lettuce-core')
+
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+	testCompileOnly 'org.projectlombok:lombok:1.18.28'
+
 	testImplementation ('org.springframework.boot:spring-boot-starter-test')
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
 }
+

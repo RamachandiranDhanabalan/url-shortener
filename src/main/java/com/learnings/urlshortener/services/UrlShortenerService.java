@@ -1,5 +1,7 @@
 package com.learnings.urlshortener.services;
 
+import com.learnings.urlshortener.dao.UrlShortenerMapDao;
+import com.learnings.urlshortener.model.UrlShortenerMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -13,8 +15,17 @@ public class UrlShortenerService {
     @Autowired
     private Environment env;
 
+    @Autowired
+    private UrlShortenerMapDao urlShortenerMapDao;
+
     public String shortenUrl(String lengthyUrl) {
-        return buildEncryptedTinyKey(lengthyUrl);
+        String tinyUrlKey = buildEncryptedTinyKey(lengthyUrl);
+        while (null != urlShortenerMapDao.getOneUrlShortenerMap(tinyUrlKey)) {
+            tinyUrlKey = buildEncryptedTinyKey(lengthyUrl);
+        }
+        UrlShortenerMap mapEntry = new UrlShortenerMap(lengthyUrl, tinyUrlKey);
+        urlShortenerMapDao.saveUrlShortenerMap(mapEntry);
+        return tinyUrlKey;
     }
 
     private String buildEncryptedTinyKey(String lengthyUrl) {
@@ -27,5 +38,13 @@ public class UrlShortenerService {
 
     public String getApiUrl() {
         return env.getProperty("url-shortener.api.url");
+    }
+
+    public String getLengthyUrl(String tinyUrl) {
+        UrlShortenerMap mapEntry = urlShortenerMapDao.getOneUrlShortenerMap(tinyUrl);
+        if (null != mapEntry) {
+            return mapEntry.getLongUrl();
+        }
+        return null;
     }
 }

@@ -23,14 +23,12 @@ public class UrlShortenerController {
     }
 
     @PostMapping("/shortenUrl")
-    public ResponseEntity<?> shortenUrl(@RequestBody String url) {
-        Map<String, Object> responseMap = new LinkedHashMap<String, Object>();
-
+    public ResponseEntity<?> shortenUrl(@RequestParam(name = "url") String url) {
         if (StringUtils.isBlank(url)) {
-            responseMap.put("error", "Missing field: url");
-            return new ResponseEntity<>(responseMap, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Missing URL", HttpStatus.BAD_REQUEST);
         }
         try {
+            Map<String, Object> responseMap = new LinkedHashMap<String, Object>();
             String key = urlShortenerService.shortenUrl(url);
             responseMap.put("key", key);
             responseMap.put("long_url", url);
@@ -43,6 +41,10 @@ public class UrlShortenerController {
 
     @GetMapping("/{url}")
     public ResponseEntity<?> redirectShortenedUrl(@PathVariable("url") String url) {
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("https://www.google.com/")).build();
+        String lengthyUrl = urlShortenerService.getLengthyUrl(url);
+        if(null == lengthyUrl) {
+            return new ResponseEntity<>("Service not found!", HttpStatus.NOT_FOUND);
+        }
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(lengthyUrl)).build();
     }
 }
